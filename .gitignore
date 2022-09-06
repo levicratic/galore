@@ -4,4 +4,9 @@
 !Assets/**
 !Packages/**
 !ProjectSettings/**
+!Screenshots/**
+!*Build/**
 !.gitignore
+
+.DS_Store
+*.zip

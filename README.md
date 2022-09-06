@@ -1,5 +1,5 @@
 # Tower of GaLORE
-A submission for the ESU CSO Game Jam hosted over a weekend.\
+A submission for the ESU CSO Game Jam hosted over a weekend.
 > https://itch.io/jam/esu-cso-game-jam/entries - Jam Page \
 > https://itch.io/jam/esu-cso-game-jam/rate/1692887 - My Entry
 

@@ -23,6 +23,8 @@ public class PlayerMove : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Time.timeScale == 0) return; // don't update transform/rotation
+
         // get x, y coords of mouse
         mousePosition = Mouse.current.position.ReadValue();
 
@@ -34,12 +36,13 @@ public class PlayerMove : MonoBehaviour
 
         // rotation of the Z-axis, get angle with arctan(o/a)
         float relZ = Mathf.Atan(relativeDirection.x / Mathf.Abs(relativeDirection.y)) / Mathf.PI * 360;
-        relZ = Mathf.Clamp(relZ*Mathf.Log10(relativeDirection.magnitude/10), -90, 90);
+        // clamp 80 degrees and contain with log function
+        relZ = Mathf.Clamp(relZ*Mathf.Log10(relativeDirection.magnitude/10), -80, 80);
 
         transform.LookAt(mousePosition);
         transform.Rotate(0, 0, relZ);
-
     }
+
 
     void FixedUpdate()
     {

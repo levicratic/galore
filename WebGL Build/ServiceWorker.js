@@ -1,9 +1,9 @@
 const cacheName = "Corl Entertainment-GaLORE-0.1";
 const contentToCache = [
-    "Build/GaLORE.loader.js",
-    "Build/GaLORE.framework.js",
-    "Build/GaLORE.data",
-    "Build/GaLORE.wasm",
+    "Build/Web GL Build.loader.js",
+    "Build/Web GL Build.framework.js",
+    "Build/Web GL Build.data",
+    "Build/Web GL Build.wasm",
     "TemplateData/style.css"
 
 ];

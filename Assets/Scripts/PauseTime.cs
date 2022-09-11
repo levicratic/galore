@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 /* -- FEATURES --
  * Mouse cursor is hidden during gameplay
@@ -16,45 +17,34 @@ using UnityEngine.InputSystem;
 public class PauseTime : MonoBehaviour
 {
 
-    [Header("Inputs")]
-    public InputAction pause;
-    public InputAction slow;
+    enum STATE { paused, slowing, timeout }
 
-    [Header("Pauseable Objects")]
-    public GameObject spritePause;
-    public AudioSource audioSource;
+    private STATE game;
+
+    [Header("Inputs - ESC / SPACE")]
+    public InputAction PauseAction;
+    public InputAction SlowAction;
 
     [Header("Multipliers")]
-    public float slowMult = 6f;
+    public float slowFade = 6f;
 
-    private float timeScale // every time the time scale is changed
+    [Header("Time-based Objects")]
+    public Light lightSource;
+    public AudioSource musicPlayer;
+    public Image pauseSprite;
+
+    [Header("Pause Colors - can / can't slow")]
+    public Color defaultColor = new Color(100/255, 1, 1, 0); // #75FFFF blue
+    public Color deniedColor = new Color(1, 72/255, 64/255, 0); //#FF4840 red
+    // denied color is not implemented yet
+    // I'd have to have a new scale, I think
+
+    private float _timeScale = 1f;
+    private float timeScale // accessed every time the time scale is changed
     {
-        get { return Time.timeScale; }
-        set {
-            Time.timeScale = value > .999f ? 1 : value;
-            Time.fixedDeltaTime = 0.02f * timeScale;
-            lightDim.intensity = timeScale * timeScale;
-            audioDim.pitch = timeScale;
-            _inverse = 1; // apply change to all variables, then reset the inverse curve
-        }
+        get { return _timeScale; }
+        set { _timeScale = value > .98f ? 1 : value; }
     }
-
-    private float _inverse = 1f;
-    private float inverseScale
-    {
-        get { return _inverse; }
-        set {
-            _inverse = value;
-            Time.timeScale = 1.5f - _inverse;
-            Time.fixedDeltaTime = 0.02f * timeScale;
-            lightDim.intensity = timeScale * timeScale;
-            audioDim.pitch = timeScale;
-        }
-    }
-
-    [Header("Fade with Time")]
-    public Light lightDim;
-    public AudioSource audioDim;
 
     private bool paused = false;
     private bool slowing = false;
@@ -62,50 +52,61 @@ public class PauseTime : MonoBehaviour
 
     private void Start()
     {
-        pause.started += TogglePause; // toggle
+        PauseAction.started += TogglePause;
 
-        slow.started += _ => slowing = true; //InvokeRepeating("Slow", 0, .02f);
-        slow.canceled += _ => slowing = false;
+        SlowAction.started += _ => slowing = true;
+        SlowAction.canceled += _ => slowing = false;
 
+        pauseSprite.color = defaultColor;
         Cursor.visible = false;
     }
 
     private void OnEnable()
     {
-        pause.Enable();
-        slow.Enable();
+        PauseAction.Enable();
+        SlowAction.Enable();
     }
     private void OnDisable()
     {
-        pause.Disable();
-        slow.Disable();
+        PauseAction.Disable();
+        SlowAction.Disable();
     }
 
     
     void FixedUpdate() // SLOW DOWN feature
     {
-        if (paused) return;
+        if (paused) return; // cannot slow down while paused
 
-        if (slowing && timeScale > .5001f) // slow in, timeout at .5001
+        // when space is pressed, start slowing down
+        if (slowing && !timeout && Time.timeScale > .5001f)
         {
-            timeScale = slowMult * timeScale / (slowMult - .5f + timeScale);
-            timeout = false;
+            timeScale = slowFade * timeScale / (slowFade - .5f + timeScale);
+            UpdateTime();
         }
-        else if (timeScale < .999f)
+        else if (Time.timeScale < .98f) //
         {
-            if (slowing || timeout)
+            if (slowing || timeout) // slowly return to normal
             {
-                timeScale = slowMult * 3 * timeScale / (slowMult * 3 - 1 + timeScale); // slowly return to normal
+                timeScale = slowFade * 3 * timeScale / (slowFade * 3 - 1 + timeScale); // slowly return to normal
                 slowing = false; timeout = true;
+                UpdateTime();
             }
-            else
+            else // unpausing will enter this block to speed things back to normal
             {
-                //timeScale = slowMult / 2 * timeScale / (slowMult / 2 - 1 + timeScale); // rapidly return to 1
-                inverseScale = slowMult * inverseScale / (slowMult - .5f + inverseScale);
+                timeScale = slowFade * timeScale / (slowFade - 1 + timeScale); // rapidly return to 1
+                UpdateTime();
             }
         }
+        else timeout = false; // because timeScale == 1 at this point
+        //*/
+    }
 
-        // update variables to match scale
+    private void UpdateTime()
+    {
+        Time.fixedDeltaTime = 0.02f * (Time.timeScale = timeScale);
+        lightSource.intensity = Time.timeScale * Time.timeScale;
+        musicPlayer.pitch = Time.timeScale;
+        pauseSprite.color = defaultColor + new Color(0, 0, 0, (1 - timeScale) * (1 - timeScale));
     }
 
     private void TogglePause(InputAction.CallbackContext obj)
@@ -113,16 +114,16 @@ public class PauseTime : MonoBehaviour
         if (!paused) // pause
         {
             timeScale = 0;
-            spritePause.SetActive(true);
-            audioSource.Pause();
+            UpdateTime();
+            musicPlayer.pitch = -0.2f;
             paused = true;
             Cursor.visible = true;
         }
-        else // unpause
+        else // unpause, resume with slight reduction in speed
         {
-            timeScale = 1;
-            spritePause.SetActive(false);
-            audioSource.UnPause();
+            timeScale = 0.96f;
+            UpdateTime();
+            timeout = true; // prevent slow down until scale returns to 1
             paused = false;
             Cursor.visible = false;
         }

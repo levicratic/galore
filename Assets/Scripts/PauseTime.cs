@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 /* -- FEATURES --
- * Mouse cursor is hidden during gameplay
+ * Mouse cursor is hidden during gameplay --> canceled
  * Pause when ESC is pressed. Unpause when pressed again.
  *  - pausing/unpausing must show and hide the mouse cursor, respectively
  * Rapidly slow time to half-speed when space bar is pressed
@@ -58,7 +58,7 @@ public class PauseTime : MonoBehaviour
         SlowAction.canceled += _ => slowing = false;
 
         pauseSprite.color = defaultColor;
-        Cursor.visible = false;
+        //Cursor.visible = false;
     }
 
     private void OnEnable()
@@ -117,7 +117,7 @@ public class PauseTime : MonoBehaviour
             UpdateTime();
             musicPlayer.pitch = -0.2f;
             paused = true;
-            Cursor.visible = true;
+            //Cursor.visible = true;
         }
         else // unpause, resume with slight reduction in speed
         {
@@ -125,7 +125,7 @@ public class PauseTime : MonoBehaviour
             UpdateTime();
             timeout = true; // prevent slow down until scale returns to 1
             paused = false;
-            Cursor.visible = false;
+            //Cursor.visible = false;
         }
     }
 

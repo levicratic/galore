@@ -3,6 +3,8 @@ A submission for the ESU CSO Game Jam hosted over a weekend.
 > https://itch.io/jam/esu-cso-game-jam/entries - Jam Page \
 > https://itch.io/jam/esu-cso-game-jam/rate/1692887 - My Entry
 
+Made with Unity
+
 ## Screenshots
 <img src="/Screenshots/galore-0.png" alt="Cover Image" width=500>
 <img src="/Screenshots/galore-1.png" alt="Screenshot 1" width=720>
